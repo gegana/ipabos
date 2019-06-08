@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css?family=Merriweather|Dosis|Permanent+Marker&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Dosis', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+h1, h2, h3 {
+  margin-top: 0;
+  font-family: 'Permanent Marker', cursive;
+}
+
+.Boston {
+  font-family: 'Merriweather', serif;
+}

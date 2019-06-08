@@ -1,0 +1,45 @@
+{
+  "name": "ipabos",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "antd": "^3.19.2",
+    "axios": "^0.19.0",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "googleapis": "39",
+    "nodemailer": "^6.2.1",
+    "rc-animate": "^2.8.3",
+    "rc-queue-anim": "^1.6.12",
+    "rc-tween-one": "^2.4.1",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-google-recaptcha": "^1.0.5",
+    "react-scripts": "3.0.1"
+  },
+  "scripts": {
+    "react": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "start": "node ./server.js"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "engines": {
+    "node": "8.10.0"
+  }
+}
