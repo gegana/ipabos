@@ -201,7 +201,7 @@ class RegistrationForm extends React.Component {
                   <br />
                   <h4 style={{fontSize: 16}}>
                     Thank you for submitting your response!
-                    We have sent a confirmation email to your address. <b>Please check your spam folder and make sure to unmark the email as not spam</b> so that you can receive 
+                    We have sent a confirmation email to your address. <b>Please check your spam folder and make sure to mark the email as not spam</b> so that you can receive 
                     future event invites and newsletters in your inbox.
                   </h4>
                 </Card>
