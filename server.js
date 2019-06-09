@@ -116,8 +116,8 @@ async function getCurrentContactsEmails() {
 
   for (let i = 0; i < response.data.connections.length; i++) {
     const connection = response.data.connections[i];
-    for (let z = 0; z < connection.emailAddresses; z++) {
-      const email = connection.emailAddresses[z];
+    for (let z = 0; z < connection.emailAddresses.length; z++) {
+      const email = connection.emailAddresses[z].value;
       emails[email] = 1;
     }
   }
