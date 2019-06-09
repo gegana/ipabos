@@ -36,30 +36,11 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// A list of subscriber emails to prevent duplicate contact creation
-const _subscribers_cache = {};
-
 // Authorize jwt client for googleapis
 jwtClient.authorize(function (err, tokens) {
   if (err) {
     console.log(err);
     process.exit(1);
-  } else {
-    axios.get("https://people.googleapis.com/v1/people/me/connections?personFields=emailAddresses", {
-      headers: {
-        Authorization: `Bearer ${jwtClient.credentials.access_token}`
-      }
-    }).then(res => {
-      // Initialize subscribers cache
-      res.data.connections.map(c => {
-        c.emailAddresses.map(email => {
-          _subscribers_cache[email.value] = 1;
-        });
-      });
-    }).catch(err => {
-      console.log(err);
-      process.exit(1);
-    });
   }
 });
 
@@ -118,7 +99,33 @@ function getGoogleContact(formData) {
   };
 }
 
-const subscribersGroup = "5dd3ac9a080e516f";
+/**
+ * Get the current contact emails to avoid creating duplicates.
+ */
+async function getCurrentContactsEmails() {
+  const response = await axios.get("https://people.googleapis.com/v1/people/me/connections?personFields=emailAddresses", {
+    headers: {
+      Authorization: `Bearer ${jwtClient.credentials.access_token}`
+    }
+  });
+
+  if (response.status !== 200 || !response.data || !response.data.connections) {
+    throw new Error("Unable to retrieve current email contacts.");
+  }
+  const emails = {};
+
+  for (let i = 0; i < response.data.connections.length; i++) {
+    const connection = response.data.connections[i];
+    for (let z = 0; z < connection.emailAddresses; z++) {
+      const email = connection.emailAddresses[z];
+      emails[email] = 1;
+    }
+  }
+
+  return emails;
+}
+
+const subscribersGroup = process.env.SUBSCRIBERS_RESOURCE_NAME;
 
 /**
  * POST /contacts 
@@ -126,8 +133,10 @@ const subscribersGroup = "5dd3ac9a080e516f";
  */
 app.post('/contacts', async (req, res) => {
   try {
+    // Get current contacts
+    const currentSubscribers = await getCurrentContactsEmails();
     // Prevent duplicate contact creation
-    if (_subscribers_cache[req.body.email]) {
+    if (currentSubscribers[req.body.email]) {
       console.log(`Ignoring request with duplicate email ${req.body.email}.`);
       res.json();
       return;
@@ -156,9 +165,6 @@ app.post('/contacts', async (req, res) => {
     if (createContactResponse.status !== 200) {
       throw new Error("Unable to create contact");
     }
-
-    // Memorize new subscriber to prevent duplicate contact creation
-    _subscribers_cache[req.body.email] = 1;
 
     // Return valid response to the user
     res.json();
