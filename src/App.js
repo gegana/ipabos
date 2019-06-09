@@ -201,8 +201,8 @@ class RegistrationForm extends React.Component {
                   <br />
                   <h4 style={{fontSize: 16}}>
                     Thank you for submitting your response!
-                    You will receive newsletters and event invites on your calendar. Be sure to setup a calendar app
-                    on your phone with your email!
+                    We have sent a confirmation email to your address. <b>Please check your spam folder and make sure to unmark the email as not spam</b> so that you can receive 
+                    future event invites and newsletters in your inbox.
                   </h4>
                 </Card>
               </Col>
