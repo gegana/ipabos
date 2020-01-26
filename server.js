@@ -1,3 +1,5 @@
+"use strict";
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
@@ -5,44 +7,80 @@ const axios = require('axios');
 const { google } = require('googleapis');
 const nodemailer = require('nodemailer');
 const app = express();
+const { SecretManagerServiceClient } = require("@google-cloud/secret-manager");
+const mem = require("mem");
 
-const privateKeyClientEmail = process.env.PRIVATE_KEY_CLIENT_EMAIL;
-const privateKey = process.env.PRIVATE_KEY;
-const gmail = 'hello@ipabos.com'
-const pass = process.env.GMAIL_PASS;
-const port = process.env.PORT || 9000;
-
-/**
- * Create jwt client for googleapis
- */
-const jwtClient = new google.auth.JWT(
-  privateKeyClientEmail,
-  null,
-  privateKey,
-  [
-    'https://www.googleapis.com/auth/contacts'
-  ],
-  gmail
-);
+const port = process.env.PORT || 8080;
+const smsClient = new SecretManagerServiceClient();
 
 /**
- * Email sender using gmail
+ * Get the value of a secret
+ * @param {string} name 
  */
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: gmail,
-    pass: pass
+const getSecret = mem(async (name, defaultValue = null) => {
+  try {
+    const [version] = await smsClient.accessSecretVersion({ name });
+    if (version) {
+      const payload = version.payload.data.toString("utf8");
+      if (payload) {
+        return payload;
+      }
+    }
+  } catch (err) {
+    console.error(err);
   }
-});
+  return defaultValue;
+}, { maxAge: 6.048e+8 }); // 1 week
 
-// Authorize jwt client for googleapis
-jwtClient.authorize(function (err, tokens) {
-  if (err) {
-    console.log(err);
-    process.exit(1);
+async function getSecrets() {
+  const subscriberPrivateKey = await getSecret("subscriberPrivateKey", process.env.PRIVATE_KEY);
+  const subscriberPrivateKeyClientEmail = await getSecret("subscriberPrivateKeyClientEmail", process.env.PRIVATE_KEY_CLIENT_EMAIL);
+  const subscriberResourceName = await getSecret("subscriberResourceName", process.env.SUBSCRIBERS_RESOURCE_NAME);
+  const gmail = await getSecret("gmail", process.env.GMAIL);
+  const gmailSecret = await getSecret("gmailSecret", process.env.GMAIL_PASS);
+  const recaptchaSecret = await getSecret("recaptchaSecret", process.env.RECAPTCHA_SECRET);
+  return {
+    subscriberPrivateKey,
+    subscriberPrivateKeyClientEmail,
+    subscriberResourceName,
+    gmail,
+    gmailSecret,
+    recaptchaSecret
   }
-});
+}
+
+const getJwtClient = mem(async (key = "subscriber") => {
+  const { subscriberPrivateKeyClientEmail, subscriberPrivateKey, gmail } = await getSecrets();
+  const jwtClient = new google.auth.JWT(
+    subscriberPrivateKeyClientEmail,
+    null,
+    subscriberPrivateKey,
+    [
+      'https://www.googleapis.com/auth/contacts'
+    ],
+    gmail
+  );
+  return new Promise((res, rej) => {
+    jwtClient.authorize(function (err) {
+      if (err) {
+        console.log(err);
+        rej(err);
+      }
+      res(jwtClient);
+    });
+  });
+}, { maxAge: 6.048e+8 }); // 1 week
+
+const getEmailSender = mem(async (key = "emailSender") => {
+  const { gmail, gmailSecret } = await getSecrets();
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: gmail,
+      pass: gmailSecret
+    }
+  });
+}, { maxAge: 6.048e+8 }); // 1 week
 
 app.use(express.static(path.join(__dirname, 'build')));
 app.use(bodyParser.json());
@@ -103,6 +141,7 @@ function getGoogleContact(formData) {
  * Get the current contact emails to avoid creating duplicates.
  */
 async function getCurrentContactsEmails() {
+  const jwtClient = await getJwtClient();
   const response = await axios.get("https://people.googleapis.com/v1/people/me/connections?personFields=emailAddresses", {
     headers: {
       Authorization: `Bearer ${jwtClient.credentials.access_token}`
@@ -125,14 +164,13 @@ async function getCurrentContactsEmails() {
   return emails;
 }
 
-const subscribersGroup = process.env.SUBSCRIBERS_RESOURCE_NAME;
-
 /**
  * POST /contacts 
  * Creates new Google contact
  */
 app.post('/contacts', async (req, res) => {
   try {
+    const jwtClient = await getJwtClient();
     // Get current contacts
     const currentSubscribers = await getCurrentContactsEmails();
     // Prevent duplicate contact creation
@@ -176,9 +214,11 @@ app.post('/contacts', async (req, res) => {
           createContactResponse.data.resourceName
         ]
       };
+
+      const { subscriberResourceName } = await getSecrets();
   
       // Add new contact to subscribers group
-      const group = await axios.post(`https://people.googleapis.com/v1/contactGroups/${subscribersGroup}/members:modify`, members, {
+      const group = await axios.post(`https://people.googleapis.com/v1/contactGroups/${subscriberResourceName}/members:modify`, members, {
         headers: {
           Authorization: `Bearer ${jwtClient.credentials.access_token}`
         }
@@ -194,8 +234,10 @@ app.post('/contacts', async (req, res) => {
         subject: 'Welcome to the Indonesian Professional Association in Boston',
         text: 'Please mark this message as not junk so that you may receive future newsletters and calendar invites in your Inbox.'
       };
+
+      const emailSender = await getEmailSender();
   
-      transporter.sendMail(message, (error, info) => {
+      emailSender.sendMail(message, (error, info) => {
         if (error) {
           console.log(error);
         } else {
@@ -212,16 +254,14 @@ app.post('/contacts', async (req, res) => {
   }
 });
 
-// Secret key used for recaptcha validation
-const recaptchaSecretKey = process.env.RECAPTCHA_SECRET;
-
 /**
  * Verify recaptcha token with secret
  * @param {*} recaptchaResponse 
  * @param {*} remoteAddress 
  */
 async function recaptcha(recaptchaResponse, remoteAddress) {
-  const res = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecretKey}&response=${recaptchaResponse}&remoteip=${remoteAddress}`);
+  const { recaptchaSecret } = await getSecrets();
+  const res = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecret}&response=${recaptchaResponse}&remoteip=${remoteAddress}`);
   if (res.status !== 200 || !res.data.success) {
     throw new Error("Recaptcha failed");
   }
