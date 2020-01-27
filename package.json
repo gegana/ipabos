@@ -9,25 +9,60 @@
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "googleapis": "39",
-    "mem": "^6.0.1",
+    "http-errors": "^1.7.3",
+    "mem": "^5.1.1",
     "nodemailer": "^6.2.1",
     "rc-animate": "^2.8.3",
     "rc-queue-anim": "^1.6.12",
     "rc-tween-one": "^2.4.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-google-recaptcha": "^1.0.5",
-    "react-scripts": "3.0.1"
+    "react-google-recaptcha": "^1.0.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.3",
+    "@types/body-parser": "^1.17.1",
+    "@types/express": "^4.17.2",
+    "@types/express-flash": "^0.0.1",
+    "@types/express-session": "^1.15.16",
+    "@types/http-errors": "^1.6.3",
+    "@types/jest": "^24.9.1",
+    "@types/node": "^13.5.0",
+    "@types/nodemailer": "^6.4.0",
+    "@types/react": "^16.9.19",
+    "@types/react-dom": "^16.9.5",
+    "@typescript-eslint/eslint-plugin": "^2.17.0",
+    "@typescript-eslint/parser": "^2.17.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-config-prettier": "^6.9.0",
+    "eslint-import-resolver-typescript": "^2.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-json": "^2.0.1",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-react": "^7.16.0",
+    "eslint-plugin-react-hooks": "^1.7.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^1.19.1",
+    "react-scripts": "^3.1.1",
+    "typescript": "^3.7.5"
   },
   "scripts": {
     "react": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "run-s build:*",
+    "build:react": "react-scripts build",
+    "build:server": "tsc --build server/tsconfig.json",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "start": "node ./server.js"
+    "start": "node bin/index.js",
+    "lint": "eslint . --ext .js, .jsx, .ts, .tsx"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": [
+      "plugin:react/recommended",
+      "airbnb"
+    ]
   },
   "browserslist": {
     "production": [

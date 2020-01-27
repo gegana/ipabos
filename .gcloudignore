@@ -16,3 +16,7 @@
 # Node.js dependencies:
 node_modules/
 secrets.yaml
+
+# Source code:
+src/
+server/
