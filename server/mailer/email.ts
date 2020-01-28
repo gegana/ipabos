@@ -3,6 +3,7 @@ import Mail from 'nodemailer/lib/mailer';
 import nodemailer from 'nodemailer';
 import mem from 'mem';
 import { getMemoizedSecret } from '../gcloud/secrets';
+import { GoogleContact } from '../contacts/manager';
 
 
 export interface EmailMessage {
@@ -10,6 +11,18 @@ export interface EmailMessage {
   to: string;
   subject: string;
   text: string;
+}
+
+export function requestForApproval(
+  contact: GoogleContact,
+  approveLink: string,
+): EmailMessage {
+  return {
+    from: 'hello@ipabos.com',
+    to: 'hello@ipabos.com',
+    subject: 'New request for approval',
+    text: `${approveLink}:\n${JSON.stringify(contact, null, 2)}`,
+  };
 }
 
 export function signupConfirmation(recipientEmail: string): EmailMessage {

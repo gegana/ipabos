@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import path from 'path';
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
-import { newContact, withHttpErrors } from './handlers';
+import { newContact, withHttpErrors, approveContact } from './handlers';
 
 const port = process.env.PORT || 8080;
 const smsClient = new SecretManagerServiceClient();
@@ -22,4 +22,5 @@ const withHandler = (
 );
 
 app.post('/contacts', withHandler(newContact));
+app.get('/approveContact/:encryptedContact', withHandler(approveContact));
 app.listen(port);

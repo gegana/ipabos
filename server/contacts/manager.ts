@@ -2,6 +2,7 @@ import Axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios';
 import { v1beta1 } from '@google-cloud/secret-manager';
 import { google } from 'googleapis';
 import mem from 'mem';
+import crypto from 'crypto';
 import { UserEntryForm } from '../types/forms';
 import { getMemoizedSecret } from '../gcloud/secrets';
 
@@ -18,6 +19,10 @@ export interface JwtClient {
   credentials: {
     access_token?: string | null;
   };
+}
+
+export function emailsFromContact(contact: GoogleContact): Array<string> {
+  return contact.emailAddresses.map((e) => e.value);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,10 +74,18 @@ export class ContactsManager {
 
   private contactGroupName: string;
 
-  constructor(axios: AxiosInstance, jwt: JwtClient, contactGroupName: string) {
+  private encryptionKey: string;
+
+  constructor(
+    axios: AxiosInstance,
+    jwt: JwtClient,
+    contactGroupName: string,
+    encryptionKey: string,
+  ) {
     this.axios = axios;
     this.jwt = jwt;
     this.contactGroupName = contactGroupName;
+    this.encryptionKey = encryptionKey;
   }
 
   private static contactExists(contact: GoogleContact, emails: Set<string>): boolean {
@@ -130,9 +143,7 @@ export class ContactsManager {
   }
 
   async post(contact: GoogleContact): Promise<string | null> {
-    const emails = await this.getAllEmails();
-
-    if (ContactsManager.contactExists(contact, emails)) {
+    if (ContactsManager.contactExists(contact, await this.getAllEmails())) {
       return null;
     }
 
@@ -165,6 +176,30 @@ export class ContactsManager {
     if (!response) {
       throw new Error(`Unable to enlist contact ${contactId} to contact group ${this.contactGroupName}`);
     }
+  }
+
+  async requestForApproval(contact: GoogleContact): Promise<string | null> {
+    if (ContactsManager.contactExists(contact, await this.getAllEmails())) {
+      return null;
+    }
+    return this.encryptContact(contact);
+  }
+
+  encryptContact(contact: GoogleContact): string {
+    const iv = crypto.randomBytes(16);
+    const asJson = JSON.stringify(contact);
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(this.encryptionKey), iv);
+    const encrypted = Buffer.concat([cipher.update(asJson), cipher.final()]);
+    return `${iv.toString('hex')}:${encrypted.toString('hex')}`;
+  }
+
+  decryptContact(encryptedContact: string): GoogleContact {
+    const parts = encryptedContact.split(':');
+    const iv = Buffer.from(parts.shift(), 'hex');
+    const encryptedText = Buffer.from(parts.join(':'), 'hex');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(this.encryptionKey), iv);
+    const decrypted = Buffer.concat([decipher.update(encryptedText), decipher.final()]);
+    return JSON.parse(decrypted.toString());
   }
 }
 
@@ -200,9 +235,15 @@ export async function createContactsManager(
   const subscriberPrivateKey = await getMemoizedSecret('subscriberPrivateKey', secretManagerClient);
   const subscriberPrivateKeyClientEmail = await getMemoizedSecret('subscriberPrivateKeyClientEmail', secretManagerClient);
   const subscriberResourceName = await getMemoizedSecret('subscriberResourceName', secretManagerClient);
+  const subscriberContactEncryptionKey = await getMemoizedSecret('subscriberContactEncryptionKey', secretManagerClient);
+
   const gmail = await getMemoizedSecret('gmail', secretManagerClient);
   const jwt = await getJwtClient(subscriberPrivateKey, subscriberPrivateKeyClientEmail, gmail);
-  return new ContactsManager(Axios.create(), jwt, subscriberResourceName);
+  return new ContactsManager(
+    Axios.create(),
+    jwt, subscriberResourceName,
+    subscriberContactEncryptionKey,
+  );
 }
 
 export const createMemoizedContactsManager = mem(createContactsManager, { maxAge: 6.048e+8 });
