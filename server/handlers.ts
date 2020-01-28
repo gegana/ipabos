@@ -60,7 +60,7 @@ export async function approveContact(
   const contactId = await contactManager.post(
     contact,
   );
-  response.json({ message: `Contact ${contactId} created.` });
+  response.json({ message: `Contact ${contactId ?? 'was'} created.` });
   try {
     if (contactId != null) {
       await contactManager.enlist(contactId);
