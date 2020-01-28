@@ -20,4 +20,7 @@ secrets.yaml
 # Source code:
 src/
 server/
+
+# Dev
 .vscode/
+tsconfig.json
