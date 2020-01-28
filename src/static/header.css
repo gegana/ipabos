@@ -1,0 +1,47 @@
+/* stylelint-disable at-rule-empty-line-before,at-rule-name-space-after,at-rule-no-unknown */
+/* stylelint-disable no-duplicate-selectors */
+/* stylelint-disable */
+/* stylelint-disable declaration-bang-space-before,no-duplicate-selectors,string-no-newline */
+#header,
+header {
+  transition: all 0.3s;
+  background: #fff;
+  box-shadow: 0 2px 8px #f0f1f2;
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+}
+#header #logo,
+header #logo {
+  overflow: hidden;
+  padding-left: 40px;
+  float: left;
+  height: 64px;
+  line-height: 64px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: padding 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+#header #logo img,
+header #logo img {
+  height: 32px;
+  margin-right: 16px;
+}
+#header #logo img + img,
+header #logo img + img {
+  height: 16px;
+  position: relative;
+  top: 1px;
+}
+.home #header,
+.home header {
+  box-shadow: none;
+  max-width: 1200px;
+  width: 100%;
+  margin: 20px auto 0;
+  padding: 0 24px;
+}
+.home #header #logo,
+.home header #logo {
+  padding: 0;
+}

@@ -6,8 +6,10 @@
     "@google-cloud/secret-manager": "^1.1.2",
     "antd": "^3.19.2",
     "axios": "^0.19.0",
+    "bisheng": "^1.4.6",
     "body-parser": "^1.19.0",
     "crypto": "^1.0.1",
+    "enquire-js": "^0.2.1",
     "express": "^4.17.1",
     "googleapis": "39",
     "http-errors": "^1.7.3",
@@ -15,10 +17,13 @@
     "nodemailer": "^6.2.1",
     "rc-animate": "^2.8.3",
     "rc-queue-anim": "^1.6.12",
+    "rc-scroll-anim": "^2.7.4",
     "rc-tween-one": "^2.4.1",
     "react": "^16.8.6",
+    "react-document-title": "^2.0.3",
     "react-dom": "^16.8.6",
-    "react-google-recaptcha": "^1.0.5"
+    "react-google-recaptcha": "^1.0.5",
+    "react-intl": "^3.11.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.3",
@@ -44,6 +49,9 @@
     "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-react": "^7.16.0",
     "eslint-plugin-react-hooks": "^1.7.0",
+    "less": "^3.10.3",
+    "less-watch-compiler": "^1.14.6",
+    "node-sass": "^4.13.1",
     "npm-run-all": "^4.1.5",
     "prettier": "^1.19.1",
     "react-scripts": "^3.1.1",
@@ -52,6 +60,7 @@
   "scripts": {
     "react": "react-scripts start",
     "build": "run-s build:*",
+    "build:less": "less-watch-compiler --enable-js --run-once src src",
     "build:react": "react-scripts build",
     "build:server": "tsc --build server/tsconfig.json",
     "test": "react-scripts test",

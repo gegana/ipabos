@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/named
 import { BadRequest, NotFound } from 'http-errors';
 import { Request, Response } from 'express';
 import { v1beta1 } from '@google-cloud/secret-manager';

@@ -11,7 +11,7 @@ module.exports = {
       node: {
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
       }
-    },
+    }
   },
   rules: {
     'react/jsx-filename-extension': [2, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
@@ -29,4 +29,8 @@ module.exports = {
       tsx: 'never',
     }],
   },
+  "env": {
+    "browser": true,
+    "node": true
+  }
 };
