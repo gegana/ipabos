@@ -1,4 +1,5 @@
 import Axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios';
+import moment from 'moment';
 import { v1beta1 } from '@google-cloud/secret-manager';
 import { google } from 'googleapis';
 import mem from 'mem';
@@ -6,13 +7,25 @@ import crypto from 'crypto';
 import { UserEntryForm } from '../types/forms';
 import { getMemoizedSecret } from '../gcloud/secrets';
 
+export type GoogleContactDate = {
+  year: number;
+  month: number;
+  day: number;
+}
+
+
+export type GoogleContactOrganization = {
+  name: string; title: string; type: 'work' | 'school'; startDate?: GoogleContactDate;
+};
+
 export type GoogleContact = {
   names: Array<{givenName: string; familyName: string}>;
   emailAddresses: Array<{value: string; type: string}>;
   phoneNumbers: Array<{value: string; type: string}>;
-  organizations: Array<{name: string; title: string; type: string}>;
+  organizations: Array<GoogleContactOrganization>;
   occupations: Array<{value: string}>;
   urls: Array<{value: string; type: string}>;
+  userDefined: Array<{key: string; value: string }>;
 };
 
 export interface JwtClient {
@@ -25,8 +38,70 @@ export function emailsFromContact(contact: GoogleContact): Array<string> {
   return contact.emailAddresses.map((e) => e.value);
 }
 
+export function* parseWorkOrganizations(
+  formData: UserEntryForm,
+): Generator<GoogleContactOrganization, any, undefined> {
+  const companies = Object.keys(formData).filter((k) => k.startsWith('company'));
+  for (let i = 0; i < companies.length; i += 1) {
+    const affix = i > 0 ? `${i}` : '';
+    const name = formData[`company${affix}`];
+    const title = formData[`position${affix}`];
+    const positionStartDate = formData.positionstartdate;
+    const organization: GoogleContactOrganization = {
+      name,
+      title,
+      type: 'work',
+    };
+    if (positionStartDate != null) {
+      const d = moment.utc(positionStartDate);
+      organization.startDate = {
+        year: d.year(),
+        month: d.month(),
+        day: d.day(),
+      };
+    }
+    yield organization;
+  }
+}
+
+export function* parseSchoolOrganizations(
+  formData: UserEntryForm,
+): Generator<GoogleContactOrganization, any, undefined> {
+  const degrees = Object.keys(formData).filter((k) => k.startsWith('degree'));
+  for (let i = 0; i < degrees.length; i += 1) {
+    const affix = i > 0 ? `${i}` : '';
+    const name = formData[`school${affix}`];
+    const title = formData[`degree${affix}`];
+    const schoolyear = formData[`schoolyear${affix}`];
+    const d = moment.utc(schoolyear);
+    const organization: GoogleContactOrganization = {
+      name,
+      title,
+      type: 'school',
+      startDate: {
+        year: d.year(),
+        month: d.month(),
+        day: d.day(),
+      },
+    };
+    yield organization;
+  }
+}
+
+export function* parseOccupations(
+  workOrganizations: Array<GoogleContactOrganization>,
+): Generator<{ value: string }, any, undefined> {
+  for (let i = 0; i < workOrganizations.length; i += 1) {
+    const organization = workOrganizations[i];
+    yield {
+      value: organization.title,
+    };
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function googleContactFromFormData(formData: UserEntryForm): GoogleContact {
+  const workOrganizations = Array.from(parseWorkOrganizations(formData));
   return {
     names: [
       {
@@ -46,24 +121,15 @@ export function googleContactFromFormData(formData: UserEntryForm): GoogleContac
         type: 'work',
       },
     ],
-    organizations: [
-      {
-        name: formData.company,
-        title: formData.profession,
-        type: 'work',
-      },
-    ],
-    occupations: [
-      {
-        value: formData.profession,
-      },
-    ],
+    organizations: workOrganizations.concat(...Array.from(parseSchoolOrganizations(formData))),
+    occupations: Array.from(parseOccupations(workOrganizations)),
     urls: [
       {
-        value: formData.linkedin,
+        value: formData.linkedIn,
         type: 'work',
       },
     ],
+    userDefined: formData.whatsapp === true ? [{ key: 'includeInWAGroup', value: 'true' }] : [],
   };
 }
 
@@ -143,10 +209,6 @@ export class ContactsManager {
   }
 
   async post(contact: GoogleContact): Promise<string | null> {
-    if (ContactsManager.contactExists(contact, await this.getAllEmails())) {
-      return null;
-    }
-
     const response = await this.axios.post(
       'https://people.googleapis.com/v1/people:createContact',
       contact,
@@ -179,9 +241,6 @@ export class ContactsManager {
   }
 
   async requestForApproval(contact: GoogleContact): Promise<string | null> {
-    if (ContactsManager.contactExists(contact, await this.getAllEmails())) {
-      return null;
-    }
     return this.encryptContact(contact);
   }
 
