@@ -2,7 +2,6 @@ import React, { ReactElement, useState, useEffect } from 'react';
 import DocumentTitle from 'react-document-title';
 import { IntlProvider } from 'react-intl';
 import { enquireScreen, unenquireScreen } from 'enquire-js';
-import Header from './Header';
 import Banner from './Banner';
 import lang from './lang/en-US';
 import './static/style';
@@ -38,13 +37,12 @@ export default function Home(): ReactElement {
   return (
     <IntlProvider locale={state.locale} messages={lang}>
       <div className="page-wrapper home">
-        <Header />
         <Banner className="home-banner" isMobile={state.isMobile} />
         <Page1 isMobile={state.isMobile} />
-        <Page2 isMobile={state.isMobile} />
+        <Page2 />
         <Page3 />
         <Footer />
-        <DocumentTitle title="Ant-Design" key="title" />
+        <DocumentTitle title="Subscribe" key="title" />
       </div>
     </IntlProvider>
   );

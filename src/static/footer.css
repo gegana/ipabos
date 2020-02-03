@@ -2,6 +2,9 @@
 /* stylelint-disable no-duplicate-selectors */
 /* stylelint-disable */
 /* stylelint-disable declaration-bang-space-before,no-duplicate-selectors,string-no-newline */
+#root {
+  background-color: black;
+}
 footer.dark {
   background-color: #000;
   color: rgba(255, 255, 255, 0.65);

@@ -2,10 +2,12 @@
 /* stylelint-disable no-duplicate-selectors */
 /* stylelint-disable */
 /* stylelint-disable declaration-bang-space-before,no-duplicate-selectors,string-no-newline */
+#root {
+  background-color: black;
+}
 #header,
 header {
   transition: all 0.3s;
-  background: #fff;
   box-shadow: 0 2px 8px #f0f1f2;
   position: relative;
   z-index: 10;
@@ -24,12 +26,11 @@ header #logo {
 }
 #header #logo img,
 header #logo img {
-  height: 32px;
+  height: 65px;
   margin-right: 16px;
 }
 #header #logo img + img,
 header #logo img + img {
-  height: 16px;
   position: relative;
   top: 1px;
 }
@@ -38,8 +39,8 @@ header #logo img + img {
   box-shadow: none;
   max-width: 1200px;
   width: 100%;
-  margin: 20px auto 0;
-  padding: 0 24px;
+  margin: 0 auto 0;
+  padding: 24px 24px;
 }
 .home #header #logo,
 .home header #logo {

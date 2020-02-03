@@ -1,5 +1,13 @@
 @import "./default.less";
 @import "./custom.less";
+.banner-background {
+  position: absolute;
+  z-index: 0;
+  background-image: url("/city_50.jpg");
+  background-size: cover;
+  width: 100%;
+  height: 100%;
+}
 .home-page-wrapper {
   width: 100%;
   padding: 0;
@@ -7,7 +15,7 @@
   position: relative; 
   // will-change: transform; // firefox 下渲染占用太大。
   color: @home-text-color;
-  font-family: 'SF UI Display', "Helvetica Neue For Number", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font: normal normal normal 14px/1.4em lulo-clean-w01-one-bold,sans-serif;
   -webkit-font-smoothing: antialiased;
   .page {
     width: 100%;
@@ -22,6 +30,9 @@
       text-align: center;
       font-weight: 400;
       margin: 140px auto 100px;
+    }
+    h3 {
+      margin: 70px auto 70px;
     }
     h1,
     h2,
@@ -103,8 +114,8 @@ svg {
 .page1 {
   min-height: 784px;
   background: @home-bg-color;
-  background: linear-gradient(to bottom, rgba(47, 84, 235, 1) 0%, rgba(58, 64, 212, 1) 100%);
-  h2 {
+  background: linear-gradient(to bottom, rgb(44, 46, 61) 0%, rgb(68, 72, 97) 100%);
+  h2, h3 {
     color: #fff !important;
   }
   &-block {
@@ -138,6 +149,7 @@ svg {
     margin: 46px auto 32px;
     transition: transform .45s @ease-out, box-shadow .45s @ease-out;
     img {
+      width: 150px;
       display: block;
     }
   }
@@ -155,8 +167,8 @@ svg {
 /** page2 **/
 
 .page2 {
-  background: #EFF3F6;
-  min-height: 1110px;
+  background: #fff;
+  min-height: 900px;
   overflow: initial;
   padding-top: 1px;
   .page {
@@ -300,4 +312,18 @@ svg {
   .parallax-bg.top {
     margin: 0;
   }
+}
+
+.steps-content {
+  margin-top: 16px;
+  border: 1px dashed #e9e9e9;
+  border-radius: 6px;
+  background-color: #fafafa;
+  min-height: 200px;
+  text-align: center;
+  padding-top: 80px;
+}
+
+.steps-action {
+  margin-top: 24px;
 }

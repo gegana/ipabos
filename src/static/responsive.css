@@ -2,6 +2,9 @@
 /* stylelint-disable no-duplicate-selectors */
 /* stylelint-disable */
 /* stylelint-disable declaration-bang-space-before,no-duplicate-selectors,string-no-newline */
+#root {
+  background-color: black;
+}
 @media only screen and (max-width: 767.99px) {
   #header {
     text-align: center;
@@ -48,7 +51,7 @@
   .banner .text-wrapper p {
     font-size: 14px;
     line-height: 28px;
-    color: #314659;
+    color: #e0e0e0;
   }
   .page1 {
     min-height: 1538px;
@@ -117,15 +120,12 @@
   }
   .page3 {
     min-height: 688px;
-    background: url('https://gw.alipayobjects.com/zos/rmsportal/qICoJIqqQRMeRGhPHBBS.svg') no-repeat;
-    background-size: cover;
   }
   .page3 .ant-row {
     margin: 0 8px;
   }
   .page3 .page3-block {
     padding: 24px;
-    background: #fff;
     border-radius: 4px;
     box-shadow: 0 8px 16px rgba(174, 185, 193, 0.3);
     margin-bottom: 32px;
@@ -173,18 +173,10 @@
   .home #footer .footer-wrap .ant-row {
     padding: 0;
   }
-  .home #footer .footer-wrap .ant-row > div:nth-child(2),
-  .home #footer .footer-wrap .ant-row > div:nth-child(4) {
-    display: none;
-  }
   .home #footer .footer-wrap .ant-row > div a {
     font-weight: 300;
   }
   .home #footer .bottom-bar > div > span {
     display: block;
-  }
-  .home #footer .bottom-bar > div > span:nth-child(1),
-  .home #footer .bottom-bar > div > span:nth-child(2) {
-    display: none;
   }
 }
