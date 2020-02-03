@@ -3,7 +3,8 @@ import { BadRequest, NotFound } from 'http-errors';
 import { Request, Response } from 'express';
 import { v1beta1 } from '@google-cloud/secret-manager';
 import { validate } from './recaptcha/validate';
-import { googleContactFromFormData, createMemoizedContactsManager, emailsFromContact } from './contacts/manager';
+import { googleContactFromFormData, createContactsManager, emailsFromContact } from './contacts/manager';
+import { createContactsCrypto } from './contacts/crypto';
 import {
   mail, signupConfirmation, getMailer, requestForApproval,
 } from './mailer/email';
@@ -37,8 +38,8 @@ export async function newContact(
     throw new BadRequest();
   }
   const contact = googleContactFromFormData(request.body);
-  const contactManager = await createMemoizedContactsManager(secretManagerClient);
-  const encryptedContact = await contactManager.requestForApproval(contact);
+  const contactCrypto = await createContactsCrypto(secretManagerClient);
+  const encryptedContact = await contactCrypto.encryptContact(contact);
 
   if (encryptedContact != null) {
     const mailer = await getMailer(secretManagerClient);
@@ -56,8 +57,9 @@ export async function approveContact(
   if (!request.params.encryptedContact) {
     throw new BadRequest();
   }
-  const contactManager = await createMemoizedContactsManager(secretManagerClient);
-  const contact = contactManager.decryptContact(request.params.encryptedContact);
+  const contactManager = await createContactsManager(secretManagerClient);
+  const contactCrypto = await createContactsCrypto(secretManagerClient);
+  const contact = contactCrypto.decryptContact(request.params.encryptedContact);
   const contactId = await contactManager.post(
     contact,
   );
