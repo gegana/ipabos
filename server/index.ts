@@ -1,10 +1,10 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { Datastore } from '@google-cloud/datastore';
 import datastoreConnect from '@google-cloud/connect-datastore';
 import session from 'express-session';
 import bodyParser from 'body-parser';
 import path from 'path';
-import { newContact, approveContact } from './handlers';
+import { newContact, withHttpErrors, approveContact } from './handlers';
 
 const port = process.env.PORT || 8080;
 const DatastoreStore = datastoreConnect(session);
@@ -26,7 +26,11 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../build', 'index.html'));
 });
 
+const withHandler = (
+  fn: (Request, Response) => Promise<void>): (Request, Response
+  ) => Promise<void> => (request: Request,
+  response: Response): Promise<void> => withHttpErrors(fn, request, response);
 
-app.post('/contacts', newContact);
-app.get('/approveContact', approveContact);
+app.post('/contacts', withHandler(newContact));
+app.get('/approveContact', withHandler(approveContact));
 app.listen(port);

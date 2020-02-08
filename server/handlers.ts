@@ -88,21 +88,20 @@ export async function approveContact(
   const contactManager = await createContactsManager(await oAuthClientWithCredentials(code));
   const contactId = await contactManager.post(contact);
 
-  response.json({ message: `Contact ${contactId ?? 'was'} created.` });
-
   await contactManager.enlist(contactId);
   const mailer = await getMailer(sm);
   emailsFromContact(contact).forEach((email) => mail(signupConfirmation(email), mailer));
+
+  response.json({ message: `Contact ${contactId ?? 'was'} created.` });
 }
 
 export async function withHttpErrors(
-  fn: (Request, Response, secretManagerClient: v1beta1.SecretManagerServiceClient) => Promise<void>,
+  fn: (Request, Response) => Promise<void>,
   request: Request,
   response: Response,
-  secretManagerClient: v1beta1.SecretManagerServiceClient,
 ): Promise<void> {
   try {
-    await fn(request, response, secretManagerClient);
+    await fn(request, response);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);

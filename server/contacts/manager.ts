@@ -120,19 +120,20 @@ export class ContactsManager {
   }
 
   async post(contact: people_v1.Schema$Person): Promise<string> {
-    const { data: newContact } = await this.people.people.createContact({ requestBody: contact });
-    const contactId = newContact.resourceName.replace('people/', '');
-    return contactId;
+    const {
+      data: { resourceName },
+    } = await this.people.people.createContact({ requestBody: contact });
+    return resourceName;
   }
 
-  async enlist(contactId: string): Promise<void> {
+  async enlist(resourceName: string): Promise<void> {
     const requestBody = {
       resourceNamesToAdd: [
-        contactId,
+        resourceName,
       ],
     };
     await this.people.contactGroups.members.modify({
-      resourceName: this.contactGroupName,
+      resourceName: `contactGroups/${this.contactGroupName}`,
       requestBody,
     });
   }
