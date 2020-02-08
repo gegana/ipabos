@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { v1beta1 } from '@google-cloud/secret-manager';
 import crypto from 'crypto';
+import { people_v1 } from 'googleapis';
 import { getMemoizedSecret } from '../gcloud/secrets';
-import { GoogleContact } from './manager';
 
 export class ContactsCrypto {
   key: string;
@@ -10,7 +11,7 @@ export class ContactsCrypto {
     this.key = key;
   }
 
-  encryptContact(contact: GoogleContact): string {
+  encryptContact(contact: people_v1.Schema$Person): string {
     const iv = crypto.randomBytes(16);
     const asJson = JSON.stringify(contact);
     const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(this.key), iv);
@@ -18,7 +19,7 @@ export class ContactsCrypto {
     return `${iv.toString('hex')}:${encrypted.toString('hex')}`;
   }
 
-  decryptContact(encryptedContact: string): GoogleContact {
+  decryptContact(encryptedContact: string): people_v1.Schema$Person {
     const parts = encryptedContact.split(':');
     const iv = Buffer.from(parts.shift(), 'hex');
     const encryptedText = Buffer.from(parts.join(':'), 'hex');

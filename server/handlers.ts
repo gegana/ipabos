@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/named
 import { BadRequest, NotFound } from 'http-errors';
 import { Request, Response } from 'express';
 import { v1beta1 } from '@google-cloud/secret-manager';
@@ -8,6 +7,8 @@ import { createContactsCrypto } from './contacts/crypto';
 import {
   mail, signupConfirmation, getMailer, requestForApproval,
 } from './mailer/email';
+import { secretsManager } from './gcloud/secrets';
+import { oAuthClient, oAuthClientWithCredentials } from './gcloud/auth';
 
 function getIPAddress(request: Request): string {
   return request.headers['x-forwarded-for'] as string
@@ -26,23 +27,39 @@ function getRequestForApprovalLink(encryptedContact: string): string {
   return `https://www.ipabos.com/approveContact/${encryptedContact}`;
 }
 
+async function redirectToGoogleAuth(request: Request, response: Response): Promise<void> {
+  const { query: { state } } = request;
+  if (!state) {
+    throw new BadRequest();
+  }
+  request.session.encodedContactRequest = state;
+  const url = (await oAuthClient()).generateAuthUrl({
+    scope: [
+      'https://www.googleapis.com/auth/contacts',
+    ],
+  });
+  request.session.save((err) => {
+    if (err) {
+      throw err;
+    }
+    response.redirect(url);
+  });
+}
+
 export async function newContact(
   request: Request,
   response: Response,
-  secretManagerClient: v1beta1.SecretManagerServiceClient,
 ): Promise<void> {
-  if (!await validate(
-    getCaptchaToken(request),
-    getIPAddress(request), secretManagerClient,
-  )) {
+  const sm = secretsManager();
+  if (!await validate(getCaptchaToken(request), getIPAddress(request), sm)) {
     throw new BadRequest();
   }
   const contact = googleContactFromFormData(request.body);
-  const contactCrypto = await createContactsCrypto(secretManagerClient);
+  const contactCrypto = await createContactsCrypto(sm);
   const encryptedContact = await contactCrypto.encryptContact(contact);
 
   if (encryptedContact != null) {
-    const mailer = await getMailer(secretManagerClient);
+    const mailer = await getMailer(sm);
     await mail(requestForApproval(contact, getRequestForApprovalLink(encryptedContact)), mailer);
   }
 
@@ -52,28 +69,30 @@ export async function newContact(
 export async function approveContact(
   request: Request,
   response: Response,
-  secretManagerClient: v1beta1.SecretManagerServiceClient,
 ): Promise<void> {
-  if (!request.params.encryptedContact) {
+  const { query: { code }, session: { encodedContactRequest } } = request;
+
+  if (!code) {
+    redirectToGoogleAuth(request, response);
+    return;
+  }
+
+  if (!encodedContactRequest) {
     throw new BadRequest();
   }
-  const contactManager = await createContactsManager(secretManagerClient);
-  const contactCrypto = await createContactsCrypto(secretManagerClient);
-  const contact = contactCrypto.decryptContact(request.params.encryptedContact);
-  const contactId = await contactManager.post(
-    contact,
-  );
+
+  const sm = secretsManager();
+  const contactCrypto = await createContactsCrypto(sm);
+  const contact = contactCrypto.decryptContact(encodedContactRequest);
+
+  const contactManager = await createContactsManager(await oAuthClientWithCredentials(code));
+  const contactId = await contactManager.post(contact);
+
   response.json({ message: `Contact ${contactId ?? 'was'} created.` });
-  try {
-    if (contactId != null) {
-      await contactManager.enlist(contactId);
-      const mailer = await getMailer(secretManagerClient);
-      emailsFromContact(contact).forEach((email) => mail(signupConfirmation(email), mailer));
-    }
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(error);
-  }
+
+  await contactManager.enlist(contactId);
+  const mailer = await getMailer(sm);
+  emailsFromContact(contact).forEach((email) => mail(signupConfirmation(email), mailer));
 }
 
 export async function withHttpErrors(

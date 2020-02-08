@@ -1,4 +1,4 @@
-import { v1beta1 } from '@google-cloud/secret-manager';
+import { v1beta1, SecretManagerServiceClient } from '@google-cloud/secret-manager';
 import mem from 'mem';
 
 export function getProjectId(): string {
@@ -24,3 +24,6 @@ export async function getSecret(
 }
 
 export const getMemoizedSecret = mem(getSecret, { maxAge: 6.048e+8, cachePromiseRejection: false });
+
+export const secretsManager = mem(() => new SecretManagerServiceClient(),
+  { maxAge: 6.048e+8, cachePromiseRejection: false });
