@@ -24,7 +24,7 @@ function getCaptchaToken(request: Request): string {
 }
 
 function getRequestForApprovalLink(encryptedContact: string): string {
-  return `https://www.ipabos.com/approveContact/${encryptedContact}`;
+  return `https://www.ipabos.com/approveContact?state=${encryptedContact}`;
 }
 
 async function redirectToGoogleAuth(request: Request, response: Response): Promise<void> {
