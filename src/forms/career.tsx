@@ -78,10 +78,6 @@ class CareerForm extends Component<Props> {
                   {getFieldDecorator('linkedIn', {
                     rules: [
                       {
-                        required: true,
-                        message: 'Please input a valid link to your LinkedIn profile',
-                      },
-                      {
                         type: 'url',
                         message: 'Please input a valid url!',
                       },

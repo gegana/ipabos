@@ -6,7 +6,6 @@ import {
 } from 'antd';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
-import { callbackPromise } from 'nodemailer/lib/shared';
 
 
 type Props = {
