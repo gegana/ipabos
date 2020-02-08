@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { v1beta1 } from '@google-cloud/secret-manager';
 import Mail from 'nodemailer/lib/mailer';
 import nodemailer from 'nodemailer';
 import mem from 'mem';
+import { people_v1 } from 'googleapis';
 import { getMemoizedSecret } from '../gcloud/secrets';
-import { GoogleContact } from '../contacts/manager';
 
 
 export interface EmailMessage {
@@ -14,7 +15,7 @@ export interface EmailMessage {
 }
 
 export function requestForApproval(
-  contact: GoogleContact,
+  contact: people_v1.Schema$Person,
   approveLink: string,
 ): EmailMessage {
   return {
@@ -29,7 +30,7 @@ export function signupConfirmation(recipientEmail: string): EmailMessage {
   return {
     from: 'hello@ipabos.com',
     to: recipientEmail,
-    subject: 'Welcome to the Indonesian Professional Association in Boston',
+    subject: 'Welcome to the Indonesian Professionals Association in Boston',
     text: 'Please mark this message as not junk so that you may receive future newsletters and calendar invites in your Inbox.',
   };
 }
