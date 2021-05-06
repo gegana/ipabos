@@ -69,7 +69,7 @@ function Footer(): ReactElement {
         <Col md={4} sm={24} />
         <Col md={20} sm={24}>
           <span style={{ marginRight: 12 }}>
-            Copyright © Indonesian Professionals Association
+            Copyright © IPABOS
           </span>
         </Col>
       </Row>

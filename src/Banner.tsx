@@ -17,7 +17,7 @@ function Callout(justify: 'space-around' | 'space-between' | 'center' | 'end' | 
     <Col md={12} xs={24}>
       <Row type="flex" justify={justify}>
         <p className="callout">
-          <a href="#page2">
+          <a href="#subscribe-title">
             <Button type="danger" size="large">JOIN</Button>
           </a>
         </p>
@@ -71,7 +71,7 @@ export default function Banner({ className, isMobile }: BannerProps): ReactEleme
           key="text"
           type="bottom"
         >
-          <p key="p">
+          <p className="subtitle" key="p">
             <FormattedMessage id="app.home.introduce" />
           </p>
         </QueueAnim>

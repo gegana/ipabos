@@ -72,13 +72,13 @@ export default function Page2(): ReactElement {
     displayConfirmation ? null : (
       <div className="home-page-wrapper page2">
         <Row className="page" type="flex" align="middle" justify="center">
-          <h2 style={{ margin: '100px 0 0 0', color: 'rgba(0, 0, 0, 0.85)' }}><FormattedMessage id="app.home.solution" /></h2>
+          <h2 id="subscribe-title" style={{ margin: '30px 0 0 10', color: 'rgba(0, 0, 0, 0.85)' }}><FormattedMessage id="app.home.solution" /></h2>
         </Row>
         <Row
           type="flex"
-          align="middle"
+          align="top"
           justify="center"
-          style={{ minHeight: '900px', margin: '24px' }}
+          style={{ minHeight: '600px', margin: '24px' }}
           id="page2"
         >
           <Col xl={16} lg={18} md={20} xs={24}>
