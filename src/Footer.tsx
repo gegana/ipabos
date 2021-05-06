@@ -28,7 +28,7 @@ function Footer(): ReactElement {
                 <a href="mailto:hello@ipabos.com">hello@ipabos.com</a>
               </div>
               <div>
-                <a target="_blank " href="https://www.linkedin.com/groups/12284065/">LinkedIn</a>
+                <a target="_blank " href="https://www.linkedin.com/company/ipabos">LinkedIn</a>
               </div>
             </div>
           </Col>
@@ -36,18 +36,33 @@ function Footer(): ReactElement {
             <div className="footer-center">
               <h2>Affiliates</h2>
               <div>
+                <a target="_blank " href="https://www.permiasmass.com/">
+                  PERMIAS MA
+                </a>
+              </div>
+              <div>
                 <a target="_blank " href="https://www.ipanet.org/">
-                  IPANET
+                  IPA NET
                 </a>
               </div>
               <div>
                 <a target="_blank " href="https://www.ipanet.org/sf">
-                  IPASF
+                  IPA SF
                 </a>
               </div>
               <div>
                 <a target="_blank " href="https://www.ipanet.org/ny">
-                  IPANY
+                  IPA NY
+                </a>
+              </div>
+              <div>
+                <a target="_blank " href="https://www.ipanet.org/dc">
+                  IPA DC
+                </a>
+              </div>
+              <div>
+                <a target="_blank " href="https://singaporeglobalnetwork.gov.sg/">
+                  Singapore Global Network
                 </a>
               </div>
             </div>
